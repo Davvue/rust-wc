@@ -1,7 +1,6 @@
 mod counting_mode;
 
 use std::fs::read_to_string;
-use std::io::prelude::*;
 use std::path::Path;
 use std::env;
 use std::process::ExitCode;
@@ -43,10 +42,8 @@ fn main() -> ExitCode {
         }
     };
 
-    let count = match counting_mode {
-        CountingMode::Characters => content.chars().count(),
-        CountingMode::Lines => content.lines().count(),
-    };
+    let count = counting_mode.count(&content);
+
     println!("{}", count);
     ExitCode::SUCCESS
 }
