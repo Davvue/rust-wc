@@ -14,16 +14,17 @@ pub struct CountingModeInfo {
 }
 
 impl CountingModeInfo {
-    pub fn get_aliases(&self) -> &'static [&'static str] {
+    pub fn aliases(&self) -> &'static [&'static str] {
         self.aliases
     }
 
-    pub fn get_description(&self) -> &'static str {
+    pub fn description(&self) -> &'static str {
         self.description
     }
 }
 
 impl CountingMode {
+    pub const DEFAULT: CountingMode = CountingMode::Lines;
     pub const ALL: [CountingMode; 2] = [
         CountingMode::Characters,
         CountingMode::Lines

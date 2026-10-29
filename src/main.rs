@@ -11,7 +11,8 @@ fn help(program: &str) -> String {
     result += "\tOptions:\n";
 
     for mode in CountingMode::ALL {
-        result += format!("\t\t{} {}\n", mode.info().get_aliases()[0], mode.info().get_description()).as_str();
+        let info = mode.info();
+        result += &format!("\t\t{} {}\n", info.aliases().join(", "), info.description());
     }
 
     result
@@ -19,14 +20,14 @@ fn help(program: &str) -> String {
 
 fn main() -> ExitCode {
     let args: Vec<String> = env::args().collect();
-    let program = args.get(0).map(String::as_str).unwrap_or("wc");
+    let program = args.get(0).map(String::as_str).unwrap_or("rust-wc");
 
     let (file, counting_mode) = match args.get(1..).unwrap_or(&[]) {
         [h] if (h == "--help" || h == "-h") => {
             println!("{}", help(program));
             return ExitCode::SUCCESS;
         },
-        [file] if !file.starts_with('-') => (file, CountingMode::Lines),
+        [file] if !file.starts_with('-') => (file, CountingMode::DEFAULT),
         [options, file] if !file.starts_with('-') => match options.parse() {
             Ok(value) => (file, value),
             Err(why) => {
