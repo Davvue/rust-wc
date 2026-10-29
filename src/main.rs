@@ -4,7 +4,7 @@ use std::fs::read_to_string;
 use std::path::Path;
 use std::env;
 use std::process::ExitCode;
-use crate::counting_mode::{CountingMode, get_counting_mode};
+use crate::counting_mode::{CountingMode};
 
 fn help(program: &str, printer: fn(out: &str)) {
     printer(format!("Usage: {} [OPTIONS] <file>", program).as_str());
@@ -23,7 +23,14 @@ fn main() -> ExitCode {
             return ExitCode::SUCCESS;
         },
         [file] if !file.starts_with('-') => (file, CountingMode::Lines),
-        [options, file] => (file, get_counting_mode(options).unwrap_or(CountingMode::Lines)),
+        [options, file] => (file, match options.parse() {
+            Ok(value) => value,
+            Err(why) => {
+                eprintln!("{}", why);
+                help(program, |out| eprintln!("{}", out));
+                return ExitCode::FAILURE;
+            }
+        }),
         _ => {
             eprintln!("Invalid input args");
             help(program, |out| eprintln!("{}", out));
