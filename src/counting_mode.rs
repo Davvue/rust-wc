@@ -35,13 +35,13 @@ impl CountingMode {
             CountingMode::Characters => CountingModeInfo {
                 name: "Characters",
                 description: "Count characters",
-                aliases: &["-c"],
+                aliases: &["-c", "--characters"],
                 count: |content| content.chars().count()
             },
             CountingMode::Lines => CountingModeInfo {
                 name: "Lines",
                 description: "Count lines",
-                aliases: &["-l"],
+                aliases: &["-l", "--lines"],
                 count: |content| content.lines().count()
             }
         }
