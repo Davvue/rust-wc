@@ -6,11 +6,15 @@ use std::env;
 use std::process::ExitCode;
 use crate::counting_mode::{CountingMode};
 
-fn help(program: &str, printer: fn(out: &str)) {
-    printer(format!("Usage: {} [OPTIONS] <file>", program).as_str());
-    printer("\tOptions");
-    printer("\t\t-l Count lines [default]");
-    printer("\t\t-c Count characters");
+fn help(program: &str) -> String {
+    let mut result: String = format!("Usage: {program} [OPTIONS] <file>\n");
+    result += "\tOptions:\n";
+
+    for mode in CountingMode::ALL {
+        result += format!("\t\t{} {}\n", mode.info().get_aliases()[0], mode.info().get_description()).as_str();
+    }
+
+    result
 }
 
 fn main() -> ExitCode {
@@ -19,21 +23,21 @@ fn main() -> ExitCode {
 
     let (file, counting_mode) = match args.get(1..).unwrap_or(&[]) {
         [h] if (h == "--help" || h == "-h") => {
-            help(program, |out| println!("{}", out));
+            println!("{}", help(program));
             return ExitCode::SUCCESS;
         },
         [file] if !file.starts_with('-') => (file, CountingMode::Lines),
-        [options, file] => (file, match options.parse() {
-            Ok(value) => value,
+        [options, file] if !file.starts_with('-') => match options.parse() {
+            Ok(value) => (file, value),
             Err(why) => {
                 eprintln!("{}", why);
-                help(program, |out| eprintln!("{}", out));
+                eprintln!("{}", help(program));
                 return ExitCode::FAILURE;
             }
-        }),
+        },
         _ => {
             eprintln!("Invalid input args");
-            help(program, |out| eprintln!("{}", out));
+            eprintln!("{}", help(program));
             return ExitCode::FAILURE;
         }
     };

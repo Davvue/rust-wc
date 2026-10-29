@@ -6,10 +6,21 @@ pub enum CountingMode {
     Lines
 }
 
-struct CountingModeInfo {
-    descriptor: &'static str,
+pub struct CountingModeInfo {
+    name: &'static str,
+    description: &'static str,
     aliases: &'static [&'static str],
     count: fn(&str) -> usize,
+}
+
+impl CountingModeInfo {
+    pub fn get_aliases(&self) -> &'static [&'static str] {
+        self.aliases
+    }
+
+    pub fn get_description(&self) -> &'static str {
+        self.description
+    }
 }
 
 impl CountingMode {
@@ -18,15 +29,17 @@ impl CountingMode {
         CountingMode::Lines
     ];
 
-    fn info(self) -> CountingModeInfo {
+    pub fn info(self) -> CountingModeInfo {
         match self {
             CountingMode::Characters => CountingModeInfo {
-                descriptor: "Characters",
+                name: "Characters",
+                description: "Count characters",
                 aliases: &["-c"],
                 count: |content| content.chars().count()
             },
             CountingMode::Lines => CountingModeInfo {
-                descriptor: "Lines",
+                name: "Lines",
+                description: "Count lines",
                 aliases: &["-l"],
                 count: |content| content.lines().count()
             }
@@ -51,14 +64,6 @@ impl FromStr for CountingMode {
 
 impl std::fmt::Display for CountingMode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.info().descriptor)
-    }
-}
-
-pub fn get_counting_mode(option: &str) -> Result<CountingMode, String> {
-    match option {
-        "-c" => Ok(CountingMode::Characters),
-        "-l" => Ok(CountingMode::Lines),
-        _ => Err(format!("unsupported counting mode {}", option))
+        f.write_str(self.info().name)
     }
 }
