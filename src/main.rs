@@ -1,9 +1,10 @@
-use std::fs::File;
+mod counting_mode;
+
+use std::fs::read_to_string;
 use std::io::prelude::*;
 use std::path::Path;
 use std::env;
-
-mod counting_mode;
+use std::process::ExitCode;
 use crate::counting_mode::{CountingMode, get_counting_mode};
 
 fn help(program: &str, printer: fn(out: &str)) {
@@ -13,25 +14,39 @@ fn help(program: &str, printer: fn(out: &str)) {
     printer("\t\t-c Count characters");
 }
 
-fn main() {
+fn main() -> ExitCode {
     let args: Vec<String> = env::args().collect();
     let program = args.get(0).map(String::as_str).unwrap_or("wc");
 
     let (file, counting_mode) = match args.get(1..).unwrap_or(&[]) {
         [h] if (h == "--help" || h == "-h") => {
             help(program, |out| println!("{}", out));
-            return;
+            return ExitCode::SUCCESS;
         },
         [file] if !file.starts_with('-') => (file, CountingMode::Lines),
         [options, file] => (file, get_counting_mode(options).unwrap_or(CountingMode::Lines)),
         _ => {
             eprintln!("Invalid input args");
             help(program, |out| eprintln!("{}", out));
-            return;
+            return ExitCode::FAILURE;
         }
     };
 
-    println!("{} -> file: {}; counting_mode: {:?}", program, file, counting_mode);
+    let path = Path::new(file);
+    let path_display = path.display();
 
-    println!("Hello, world!");
+    let content = match read_to_string(path) {
+        Ok(con) => con,
+        Err(why) => {
+            eprintln!("Failed reading file at {}: {}", path_display, why);
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let count = match counting_mode {
+        CountingMode::Characters => content.chars().count(),
+        CountingMode::Lines => content.lines().count(),
+    };
+    println!("{}", count);
+    ExitCode::SUCCESS
 }
